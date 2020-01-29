@@ -53,7 +53,7 @@ class Ponytail_Counter(Mastodon):
         投稿
         """
         user = self.account(self.id)
-        post = "{}年{}月{}日に {} ( @{} )がぽにてをモフろうとした回数は{}です。".format(
+        post = "{}年{}月{}日に {} ( @{} )がぽにてをモフろうとした回数は{}回です。".format(
             self.day_start.year,self.day_start.month, self.day_start.day, user["display_name"], user["username"], self.count
         )
         self.status_post(status=post, visibility="unlisted")
