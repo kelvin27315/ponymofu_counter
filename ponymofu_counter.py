@@ -13,6 +13,7 @@ class Ponytail_Counter(Mastodon):
         self.path = Path(__file__).parent.resolve()
         self.id = id
         self.count = 0
+        self.kedama = 0
 
         today = dt.date.today()
         yesterday = today - dt.timedelta(days=1)
@@ -47,14 +48,15 @@ class Ponytail_Counter(Mastodon):
                     text += " " + toot["spoiler_text"]
         #もふってるのを探して数える
         self.count = len(re.findall(r"(ぽにて|ポニテ)(もふ|モフ)り(たい|てぇ)", text))
+        self.kedama = len(re.findall(r"毛玉(吐|は)いた", text))
 
     def post(self):
         """
         投稿
         """
         user = self.account(self.id)
-        post = "{}年{}月{}日に {} ( @{} )がぽにてをモフろうとした回数は{}回です。".format(
-            self.day_start.year,self.day_start.month, self.day_start.day, user["display_name"], user["username"], self.count
+        post = "{}年{}月{}日に {} ( @{} )がぽにてをモフろうとした回数は{}回です。毛玉を吐いた回数は{}回です。".format(
+            self.day_start.year,self.day_start.month, self.day_start.day, user["display_name"], user["username"], self.count, self.kedama
         )
         self.status_post(status=post, visibility="unlisted")
 
