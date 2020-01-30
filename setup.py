@@ -6,11 +6,16 @@ import os
 アプリケーションの登録とアカウントへの認証を行う
 """
 
+def check_dir(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
 def main():
     url = "https://mstdn.poyo.me"
-    path = Path(__file__).parent.resolve() / "token"
-    if not os.path.isdir(str(path)):
-        os.makedirs(str(path))
+    path = Path(__file__).parent.resolve()
+    paths = [str(path/"token"), str(path/"data"), str(path/"data"/"all"), str(path/"data"/"ponytail"), str(path/"data"/"kedama")]
+    for path in paths:
+        check_dir(path)
 
     Mastodon.create_app(
         client_name = "ponymofu_counter",
