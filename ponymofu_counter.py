@@ -6,13 +6,14 @@ from mastodon import Mastodon
 from pytz import timezone
 from pathlib import Path
 import datetime as dt
+import pandas as pd
 import re
 
 class Ponytail_Counter(Mastodon):
     def __init__(self, id=22674):
         self.path = Path(__file__).parent.resolve()
         self.id = id
-        self.count = 0
+        self.ponytail = 0
         self.kedama = 0
 
         today = dt.date.today()
@@ -37,18 +38,18 @@ class Ponytail_Counter(Mastodon):
 
     def count_ponytail(self):
         toots = self.get_toots()
-        text = ""
         #時間内のtootのみcontentを追加する
         for toot in toots:
             time = toot["created_at"].astimezone(timezone("Asia/Tokyo"))
             if self.day_start <= time and time < self.day_end:
                 #CWの呟きの場合,隠されている方も追加する
-                text += " " + toot["content"]
-                if toot["sensitive"] == True:
-                    text += " " + toot["spoiler_text"]
-        #もふってるのを探して数える
-        self.count = len(re.findall(r"(ぽにて|ポニテ)(もふ|モフ)り(たい|てぇ)", text))
-        self.kedama = len(re.findall(r"毛玉(吐|は)いた", text))
+                text = toot["content"]
+                text = "{} {}".format(toot["content"], toot["spoiler_text"]) if toot["sensitive"] == True else toot["content"]
+                #もふってるのを探して数える
+                if re.search(r"(ぽにて|ポニテ)(もふ|モフ)り(たい|てぇ)", text) is not None:
+                    self.ponytail += 1
+                if re.search(r"毛玉(吐|は)いた", text) is not None:
+                    self.kedama += 1
 
     def post(self):
         """
@@ -56,7 +57,7 @@ class Ponytail_Counter(Mastodon):
         """
         user = self.account(self.id)
         post = "{}年{}月{}日に {} ( @{} )がぽにてをモフろうとした回数は{}回です。毛玉を吐いた回数は{}回です。".format(
-            self.day_start.year,self.day_start.month, self.day_start.day, user["display_name"], user["username"], self.count, self.kedama
+            self.day_start.year,self.day_start.month, self.day_start.day, user["display_name"], user["username"], self.ponytail, self.kedama
         )
         self.status_post(status=post, visibility="unlisted")
 
