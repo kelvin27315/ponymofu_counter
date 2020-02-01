@@ -49,8 +49,8 @@ class Yoroizuka(Mastodon):
         post = "{}年{}月{}日〜{}年{}月{}日の間で、 {} ( @{} )がぽにてをモフろうとした回数、毛玉を吐いた回数についてのグラフです。".format(
             week.year,week.month,week.day, self.day.year,self.day.month, self.day.day, user["display_name"], user["username"]
         )
-        media = [mastodon.media_post(self.path / "weekly_graph.png")]
-        mastodon.status_post(post, media_ids = media, visibility="unlisted")
+        media = [self.media_post(str(self.path / "weekly_graph.png"))]
+        self.status_post(post, media_ids = media, visibility="unlisted")
 
 def main():
     mizore = Yoroizuka()
