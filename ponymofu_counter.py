@@ -17,16 +17,16 @@ def extract_content(text):
         return(text)
 
 class Ponytail_Counter(Mastodon):
-    def __init__(self, id=22674):
+    def __init__(self, id=22674, diff=0):
         self.path = Path(__file__).parent.resolve()
         self.id = id
         self.ponytail = 0
         self.kedama = 0
 
-        today = dt.date.today()
-        yesterday = today - dt.timedelta(days=1)
+        today = dt.date.today() - dt.timedelta(days=diff)
+        self.yesterday = today - dt.timedelta(days=1)
         #1日の始まりの時刻(JST)
-        self.day_start = timezone("Asia/Tokyo").localize(dt.datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0, 0))
+        self.day_start = timezone("Asia/Tokyo").localize(dt.datetime(self.yesterday.year, self.yesterday.month, self.yesterday.day, 0, 0, 0, 0))
         #1日の終わりの時刻(JST)
         self.day_end = timezone("Asia/Tokyo").localize(dt.datetime(today.year, today.month, today.day, 0, 0, 0, 0))
 
@@ -77,7 +77,7 @@ class Ponytail_Counter(Mastodon):
         self.status_post(status=post, visibility="unlisted")
 
     def data_save(self):
-        file_name = "{}.pkl".format(dt.date.today() - dt.timedelta(days=1))
+        file_name = "{}.pkl".format(self.yesterday)
         self.toots.to_pickle(self.path/"data"/"all"/file_name)
         pickup_list = [True if re.search(r"(ぽにて|ポニテ)(もふ|モフ)り(たい|てぇ)", "{} {}".format(toot["content"],toot["spoiler_text"])) is not None else False for i, toot in self.toots.iterrows()]
         self.toots[pickup_list].to_pickle(self.path/"data"/"ponytail"/file_name)
@@ -85,7 +85,7 @@ class Ponytail_Counter(Mastodon):
         self.toots[pickup_list].to_pickle(self.path/"data"/"kedama"/file_name)
 
 def main():
-    kasaki = Ponytail_Counter()
+    kasaki = Ponytail_Counter(diff=i)
     kasaki.count_ponytail()
     kasaki.post()
     kasaki.data_save()
