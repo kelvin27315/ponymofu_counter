@@ -10,6 +10,7 @@ matplotlib = "*"
 japanize-matplotlib = "*"
 mastodon-py = "*"
 pandas = "*"
+seaborn = "*"
 
 [requires]
 python_version = "3.8"
