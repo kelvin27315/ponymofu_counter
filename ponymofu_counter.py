@@ -17,13 +17,13 @@ def extract_content(text):
         return(text)
 
 class Ponytail_Counter(Mastodon):
-    def __init__(self, id=22674, diff=0):
+    def __init__(self, id=22674):
         self.path = Path(__file__).parent.resolve()
         self.id = id
         self.ponytail = 0
         self.kedama = 0
 
-        today = dt.date.today() - dt.timedelta(days=diff)
+        today = dt.date.today()
         self.yesterday = today - dt.timedelta(days=1)
         #1日の始まりの時刻(JST)
         self.day_start = timezone("Asia/Tokyo").localize(dt.datetime(self.yesterday.year, self.yesterday.month, self.yesterday.day, 0, 0, 0, 0))
@@ -85,7 +85,7 @@ class Ponytail_Counter(Mastodon):
         self.toots[pickup_list].to_pickle(self.path/"data"/"kedama"/file_name)
 
 def main():
-    kasaki = Ponytail_Counter(diff=i)
+    kasaki = Ponytail_Counter()
     kasaki.count_ponytail()
     kasaki.post()
     kasaki.data_save()
