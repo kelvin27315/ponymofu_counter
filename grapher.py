@@ -13,6 +13,14 @@ import seaborn as sns
 sns.set()
 import japanize_matplotlib
 
+def get_age_of_the_moon(day):
+        c = {1:0, 2:2, 3:0, 4:2, 5:2, 6:4, 7:5, 8:6, 9:7, 10:8, 11:9, 12:10}
+        age = (((day.year - 11) % 19) * 11 + c[day.month] + day.day) % 30
+        #moons = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"]
+        #matplotlibで絵文字の出し方わからん
+        #moon = moons[round((age/8 + 30/16)%8)]
+        return(str(age))
+
 class Grapher(Mastodon):
     def __init__(self, delta_days, id=22674):
         self.delta_days = delta_days
@@ -27,18 +35,18 @@ class Grapher(Mastodon):
         )
 
     def get_counts(self, count_type, days):
-        file_paths = [str(self.path / "data" / count_type / "{}.pkl".format(day)) for day in days]
+        file_paths = [str(self.path / "data" / count_type / "{}.pkl".format(str(day))) for day in days]
         counts = [len(pd.read_pickle(file_path)) for file_path in file_paths]
         return(counts)
 
     def make_graph(self,file_name):
-        days = [str(self.day - dt.timedelta(days=self.delta_days-1-i))for i in range(self.delta_days)]
+        days = [self.day - dt.timedelta(days=self.delta_days-1-i) for i in range(self.delta_days)]
 
         kedama_counts = self.get_counts("kedama", days)
         ponytail_counts = self.get_counts("ponytail", days)
 
         #日付の文字列のList。年号も入っているのでそれを落とす
-        days = [day[-5:] for day in days]
+        days = [str(day)[-5:]+" 月齢"+get_age_of_the_moon(day) for day in days]
 
         data = pd.concat([pd.DataFrame({
             "種類": "ぽにて",
