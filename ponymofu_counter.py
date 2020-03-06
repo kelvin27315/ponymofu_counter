@@ -2,6 +2,7 @@
 1日の発言を収集して，ぽにてをモフった数を数える
 """
 
+from grapher import get_age_of_the_moon
 from mastodon import Mastodon
 from pytz import timezone
 from pathlib import Path
@@ -71,8 +72,10 @@ class Ponytail_Counter(Mastodon):
         投稿
         """
         user = self.account(self.id)
-        post = "{}年{}月{}日に {} ( @{} )がぽにてをモフろうとした回数は{}回です。毛玉を吐いた回数は{}回です。".format(
-            self.day_start.year,self.day_start.month, self.day_start.day, user["display_name"], user["username"], self.ponytail, self.kedama
+        post = "{}年{}月{}日(月齢: {})に {} ( @{} )がぽにてをモフろうとした回数は{}回です。毛玉を吐いた回数は{}回です。".format(
+            self.day_start.year,self.day_start.month, self.day_start.day,
+            get_age_of_the_moon(self.day_start),
+            user["display_name"], user["username"], self.ponytail, self.kedama
         )
         self.status_post(status=post, visibility="unlisted")
 
