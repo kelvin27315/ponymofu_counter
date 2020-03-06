@@ -7,7 +7,7 @@ def main():
     delta_days = 7
     mizore = Grapher(delta_days)
     mizore.make_graph("weekly_graph.png")
-    mizore.post()
+    mizore.post("weekly_graph.png")
 
 if __name__ == "__main__":
     main()

@@ -13,7 +13,7 @@ def check_dir(path):
 def main():
     url = "https://mstdn.poyo.me"
     path = Path(__file__).parent.resolve()
-    paths = [str(path/"token"), str(path/"data"), str(path/"data"/"all"), str(path/"data"/"ponytail"), str(path/"data"/"kedama")]
+    paths = [str(path/"token"), star(path/"figure"), str(path/"data"), str(path/"data"/"all"), str(path/"data"/"ponytail"), str(path/"data"/"kedama")]
     for path in paths:
         check_dir(path)
 

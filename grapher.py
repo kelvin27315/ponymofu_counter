@@ -68,7 +68,7 @@ class Grapher(Mastodon):
         plt.xticks(rotation=90)
         plt.tight_layout()
         plt.gca().get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
-        plt.savefig(self.path / file_name)
+        plt.savefig(self.path / "figure" / file_name)
 
     def post(self, file_name):
         user = self.account(self.id)
@@ -76,5 +76,5 @@ class Grapher(Mastodon):
         post = "{}年{}月{}日〜{}年{}月{}日の間で、 {} ( @{} )がぽにてをモフろうとした回数、毛玉を吐いた回数についてのグラフです。".format(
             month.year,month.month,month.day, self.day.year,self.day.month, self.day.day, user["display_name"], user["username"]
         )
-        media = [self.media_post(str(self.path / file_name))]
+        media = [self.media_post(str(self.path / "figure" / file_name))]
         self.status_post(post, media_ids = media, visibility="unlisted")

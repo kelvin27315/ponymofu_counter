@@ -10,7 +10,7 @@ def main():
     delta_days = (dt.date.today() - (dt.date.today() - relativedelta(months=1))).days
     mizore = Grapher(delta_days)
     mizore.make_graph("monthly_graph.png")
-    mizore.post()
+    mizore.post("monthly_graph.png")
 
 if __name__ == "__main__":
     main()
