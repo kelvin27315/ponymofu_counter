@@ -18,8 +18,8 @@ def get_age_of_the_moon(day):
         age = (((day.year - 11) % 19) * 11 + c[day.month] + day.day) % 30
         #moons = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"]
         #matplotlibで絵文字の出し方わからん
-        #moon = moons[round((age/8 + 30/16)%8)]
-        return(str(age))
+        #moon = moons[round((age*8/30))%8]
+        return(age)
 
 class Grapher(Mastodon):
     def __init__(self, delta_days, id=22674):
@@ -46,7 +46,7 @@ class Grapher(Mastodon):
         ponytail_counts = self.get_counts("ponytail", days)
 
         #日付の文字列のList。年号も入っているのでそれを落とす
-        days = [str(day)[-5:]+" 月齢"+get_age_of_the_moon(day) for day in days]
+        days = [str(day)[-5:]+" 月齢"+str(get_age_of_the_moon(day)) for day in days]
 
         data = pd.concat([pd.DataFrame({
             "種類": "ぽにて",

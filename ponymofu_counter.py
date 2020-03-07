@@ -71,11 +71,13 @@ class Ponytail_Counter(Mastodon):
         """
         投稿
         """
+        age = get_age_of_the_moon(self.day_start)
+        moons = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"]
+        moon = moons[round((age*8/30))%8]
         user = self.account(self.id)
-        post = "{}年{}月{}日(月齢: {})に {} ( @{} )がぽにてをモフろうとした回数は{}回です。毛玉を吐いた回数は{}回です。".format(
+        post = "{}年{}月{}日(月齢: {}{})に {} ( @{} )がぽにてをモフろうとした回数は{}回です。毛玉を吐いた回数は{}回です。".format(
             self.day_start.year,self.day_start.month, self.day_start.day,
-            get_age_of_the_moon(self.day_start),
-            user["display_name"], user["username"], self.ponytail, self.kedama
+            age, moon, user["display_name"], user["username"], self.ponytail, self.kedama
         )
         self.status_post(status=post, visibility="unlisted")
 
