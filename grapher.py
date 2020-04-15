@@ -27,6 +27,7 @@ class Grapher(Mastodon):
         self.id = id
         self.path = Path(__file__).parent.resolve()
         self.day = dt.date.today() - dt.timedelta(days=1)
+        self.from_day = dt.date.today() - dt.timedelta(days=self.delta_days)
 
         super(Grapher, self).__init__(
             client_id = self.path/"token"/"clientcred.secret",
@@ -34,16 +35,29 @@ class Grapher(Mastodon):
             api_base_url = "https://mstdn.poyo.me"
         )
 
-    def get_counts(self, count_type, days):
+    def get_daily_counts(self, count_type, days):
         file_paths = [str(self.path / "data" / count_type / "{}.pkl".format(str(day))) for day in days]
         counts = [len(pd.read_pickle(file_path)) for file_path in file_paths]
         return(counts)
 
-    def make_graph(self,file_name):
+    def get_hourly_counts(self, count_type, days):
+        file_paths = [str(self.path / "data" / count_type / "{}.pkl".format(str(day))) for day in days]
+        weekday_dic = {0:"月",1:"火",2:"水",3:"木",4:"金",5:"土",6:"日"}
+        weekdays = []
+        counts = []
+        for file_path in file_paths:
+            df = pd.read_pickle(file_path)
+            if len(df) != 0:
+                for i,date in df.iterrows():
+                    counts.append(date["date"].hour + date["date"].minute/60)
+                    weekdays.append(weekday_dic[date["date"].weekday()])
+        return(counts, weekdays)
+
+    def make_graph_of_counts_per_daily(self,file_name):
         days = [self.day - dt.timedelta(days=self.delta_days-1-i) for i in range(self.delta_days)]
 
-        kedama_counts = self.get_counts("kedama", days)
-        ponytail_counts = self.get_counts("ponytail", days)
+        kedama_counts = self.get_daily_counts("kedama", days)
+        ponytail_counts = self.get_daily_counts("ponytail", days)
 
         #日付の文字列のList。年号も入っているのでそれを落とす
         days = [str(day)[-5:]+" 月齢"+str(get_age_of_the_moon(day)) for day in days]
@@ -61,20 +75,43 @@ class Grapher(Mastodon):
         fig = plt.figure()
         sns.lineplot(x="日付", y="回数", hue="種類", style="種類", markers=True, dashes=False, data=data)
         #color="#ed86b3", color="#6cc5ed"
-        month = dt.date.today() - relativedelta(months=1)
         plt.title("{}年{}月{}日〜{}年{}月{}日の間で、\nぽにてをモフろうとした回数、毛玉を吐いた回数".format(
-            month.year,month.month,month.day, self.day.year,self.day.month, self.day.day
+            self.from_day.year, self.from_day.month, self.from_day.day, self.day.year,self.day.month, self.day.day
         ))
         plt.xticks(rotation=90)
         plt.tight_layout()
         plt.gca().get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
         plt.savefig(self.path / "figure" / file_name)
 
-    def post(self, file_name):
+    def make_glaph_of_counts_per_hourly(self,file_name):
+        days = [self.day - dt.timedelta(days=self.delta_days-1-i) for i in range(self.delta_days)]
+        kedama_counts, kedama_weekdays = self.get_hourly_counts("kedama", days)
+        ponytail_counts, ponytail_weekdays = self.get_hourly_counts("ponytail", days)
+
+        data = pd.concat([pd.DataFrame({
+            "種類": "ぽにて",
+            "時間": ponytail_counts,
+            "曜日": ponytail_weekdays
+        }),pd.DataFrame({
+            "種類": "毛玉",
+            "時間": kedama_counts,
+            "曜日": kedama_weekdays
+        })])
+
+        fig = plt.figure()
+        sns.violinplot(x="曜日", y="時間", hue="種類", data=data, inner="stick", split=True)
+        plt.legend(loc="upper right", bbox_to_anchor=(1,-0.1), ncol=2)
+        plt.ylim(0,24)
+        plt.title("{}年{}月{}日〜{}年{}月{}日の間で、\nぽにてをモフろうとした事と毛玉を吐いた事の曜日と時間ごとの頻度".format(
+            self.from_day.year, self.from_day.month, self.from_day.day, self.day.year,self.day.month, self.day.day
+        ))
+        plt.tight_layout()
+        plt.savefig(self.path / "figure" / file_name)
+
+    def post(self, file_names):
         user = self.account(self.id)
-        month = dt.date.today() - relativedelta(months=1)
-        post = "{}年{}月{}日〜{}年{}月{}日の間で、 {} ( @{} )がぽにてをモフろうとした回数、毛玉を吐いた回数についてのグラフです。".format(
-            month.year,month.month,month.day, self.day.year,self.day.month, self.day.day, user["display_name"], user["username"]
+        post = "{}年{}月{}日〜{}年{}月{}日の間で、 {} ( @{} )がぽにてをモフろうとした事、毛玉を吐いた事についてのグラフです。".format(
+            self.from_day.year, self.from_day.month, self.from_day.day, self.day.year, self.day.month, self.day.day, user["display_name"], user["username"]
         )
-        media = [self.media_post(str(self.path / "figure" / file_name))]
+        media = [self.media_post(str(self.path / "figure" / file_names[i])) for i in range(len(file_names))]
         self.status_post(post, media_ids = media, visibility="unlisted")
