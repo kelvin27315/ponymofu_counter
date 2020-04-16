@@ -35,22 +35,25 @@ class Grapher(Mastodon):
             api_base_url = "https://mstdn.poyo.me"
         )
 
-    def get_daily_counts(self, count_type, days):
+    def get_file_paths(self, count_type, days):
         file_paths = [str(self.path / "data" / count_type / "{}.pkl".format(str(day))) for day in days]
+        return(file_paths)
+
+    def get_daily_counts(self, count_type, days):
+        file_paths = self.get_file_paths(count_type, days)
         counts = [len(pd.read_pickle(file_path)) for file_path in file_paths]
         return(counts)
 
     def get_hourly_counts(self, count_type, days):
-        file_paths = [str(self.path / "data" / count_type / "{}.pkl".format(str(day))) for day in days]
+        file_paths = self.get_file_paths(count_type, days)
         weekday_dic = {0:"月",1:"火",2:"水",3:"木",4:"金",5:"土",6:"日"}
         weekdays = []
         counts = []
         for file_path in file_paths:
             df = pd.read_pickle(file_path)
             if len(df) != 0:
-                for i,date in df.iterrows():
-                    counts.append(date["date"].hour + date["date"].minute/60)
-                    weekdays.append(weekday_dic[date["date"].weekday()])
+                counts.extend([date[1]["date"].hour + date[1]["date"].minute/60 for date in df.iterrows()])
+                weekdays.extend([weekday_dic[date[1]["date"].weekday()] for date in df.iterrows()])
         return(counts, weekdays)
 
     def make_graph_of_counts_per_daily(self,file_name):
