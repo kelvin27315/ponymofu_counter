@@ -46,14 +46,13 @@ class Grapher(Mastodon):
 
     def get_hourly_counts(self, count_type, days):
         file_paths = self.get_file_paths(count_type, days)
-        weekday_dic = {0:"月",1:"火",2:"水",3:"木",4:"金",5:"土",6:"日"}
         weekdays = []
         counts = []
         for file_path in file_paths:
             df = pd.read_pickle(file_path)
             if len(df) != 0:
                 counts.extend([date[1]["date"].hour + date[1]["date"].minute/60 for date in df.iterrows()])
-                weekdays.extend([weekday_dic[date[1]["date"].weekday()] for date in df.iterrows()])
+                weekdays.extend([date[1]["date"].weekday() for date in df.iterrows()])
         return(counts, weekdays)
 
     def make_graph_of_counts_per_daily(self,file_name):
@@ -101,13 +100,17 @@ class Grapher(Mastodon):
             "曜日": kedama_weekdays
         })])
 
+        weekday_dic = {0:"月",1:"火",2:"水",3:"木",4:"金",5:"土",6:"日"}
+
         fig = plt.figure()
+        ax = fig.add_subplot(111)
         sns.violinplot(x="曜日", y="時間", hue="種類", data=data, inner="stick", split=True)
         plt.legend(loc="upper right", bbox_to_anchor=(1,-0.1), ncol=2)
         plt.ylim(0,24)
         plt.title("{}年{}月{}日〜{}年{}月{}日の間で、\nぽにてをモフろうとした事と毛玉を吐いた事の曜日と時間ごとの頻度".format(
             self.from_day.year, self.from_day.month, self.from_day.day, self.day.year,self.day.month, self.day.day
         ))
+        ax.set_xticklabels([weekday_dic[w] for w in plt.xticks()[0]])
         plt.tight_layout()
         plt.savefig(self.path / "figure" / file_name)
 
