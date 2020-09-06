@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import datetime as dt
 import pandas as pd
 import seaborn as sns
+import re
 sns.set()
 import japanize_matplotlib
 
@@ -41,7 +42,14 @@ class Grapher(Mastodon):
 
     def get_daily_counts(self, count_type, days):
         file_paths = self.get_file_paths(count_type, days)
-        counts = [len(pd.read_pickle(file_path)) for file_path in file_paths]
+        if count_type == "ponytail":
+            counts = [0] * len(file_paths)
+            for i, file_path in enumerate(file_paths):
+                df = pd.read_pickle(file_path)["content"]
+                for toot in df:
+                    counts[i] += 1 if re.search(r"(ぽにて|ポニテ)(もふ|モフ)り(たい|てぇ)", toot) is not None else 5
+        else:
+            counts = [len(pd.read_pickle(file_path)) for file_path in file_paths]
         return(counts)
 
     def get_hourly_counts(self, count_type, days):
@@ -119,5 +127,5 @@ class Grapher(Mastodon):
         post = "{}年{}月{}日〜{}年{}月{}日の間で、 {} ( @{} )がぽにてをモフろうとした事、毛玉を吐いた事についてのグラフです。".format(
             self.from_day.year, self.from_day.month, self.from_day.day, self.day.year, self.day.month, self.day.day, user["display_name"], user["username"]
         )
-        media = [self.media_post(str(self.path / "figure" / file_names[i])) for i in range(len(file_names))]
+        media = [self.media_post(str(self.path / "figure" / file_name)) for file_name in file_names]
         self.status_post(post, media_ids = media, visibility="unlisted")

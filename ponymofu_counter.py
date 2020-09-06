@@ -2,7 +2,6 @@
 1日の発言を収集して，ぽにてをモフった数を数える
 """
 
-from grapher import get_age_of_the_moon
 from mastodon import Mastodon
 from pytz import timezone
 from pathlib import Path
@@ -57,6 +56,8 @@ class Ponytail_Counter(Mastodon):
                 #もふってるのを探して数える
                 if re.search(r"(ぽにて|ポニテ)(もふ|モフ)り(たい|てぇ)", text) is not None:
                     self.ponytail += 1
+                if re.search(r"(ぽにて|ポニテ)(吸|す)い(たい|てぇ)", text) is not None:
+                    self.ponytail += 5
                 if re.search(r"毛玉(吐|は)いた", text) is not None:
                     self.kedama += 1
 
@@ -84,10 +85,14 @@ class Ponytail_Counter(Mastodon):
     def data_save(self):
         file_name = "{}.pkl".format(self.yesterday)
         self.toots.to_pickle(self.path/"data"/"all"/file_name)
-        pickup_list = [True if re.search(r"(ぽにて|ポニテ)(もふ|モフ)り(たい|てぇ)", "{} {}".format(toot["content"],toot["spoiler_text"])) is not None else False for i, toot in self.toots.iterrows()]
-        self.toots[pickup_list].to_pickle(self.path/"data"/"ponytail"/file_name)
-        pickup_list = [True if re.search(r"毛玉(吐|は)いた", "{} {}".format(toot["content"],toot["spoiler_text"])) is not None else False for i, toot in self.toots.iterrows()]
-        self.toots[pickup_list].to_pickle(self.path/"data"/"kedama"/file_name)
+        if len(self.toots) == 0:
+            self.toots.to_pickle(self.path/"data"/"ponytail"/file_name)
+            self.toots.to_pickle(self.path/"data"/"kedama"/file_name)
+        else:
+            pickup_list = [True if re.search(r"(ぽにて|ポニテ)((吸|す)い|(もふ|モフ)り)(たい|てぇ)", "{} {}".format(toot["content"],toot["spoiler_text"])) is not None else False for i, toot in self.toots.iterrows()]
+            self.toots[pickup_list].to_pickle(self.path/"data"/"ponytail"/file_name)
+            pickup_list = [True if re.search(r"毛玉(吐|は)いた", "{} {}".format(toot["content"],toot["spoiler_text"])) is not None else False for i, toot in self.toots.iterrows()]
+            self.toots[pickup_list].to_pickle(self.path/"data"/"kedama"/file_name)
 
 def main():
     kasaki = Ponytail_Counter()
