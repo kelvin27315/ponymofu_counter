@@ -2,6 +2,7 @@
 1日の発言を収集して，ぽにてをモフった数を数える
 """
 
+from grapher import get_age_of_the_moon
 from mastodon import Mastodon
 from pytz import timezone
 from pathlib import Path
